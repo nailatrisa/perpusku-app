@@ -1,0 +1,19 @@
+{
+  "name": "perpusku-server",
+  "version": "1.0.0",
+  "description": "Backend API PerpusKu",
+  "main": "src/app.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "migrate": "knex migrate:latest",
+    "migrate:rollback": "knex migrate:rollback",
+    "migrate:fresh": "knex migrate:rollback --all && knex migrate:latest",
+    "seed": "knex seed:run",
+    "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run"
+  },
+  "keywords": ["perpusku", "express", "knex"],
+  "author": "Anda",
+  "license": "MIT"
+}
