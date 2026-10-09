@@ -1,7 +1,7 @@
 require('dotenv').config();
 
-module.exports = {
-  development: {
+function databaseConfig() {
+  return {
     client: 'mysql2',
     connection: {
       host: process.env.DB_HOST || '127.0.0.1',
@@ -13,5 +13,10 @@ module.exports = {
       timezone: '+07:00',
     },
     pool: { min: 2, max: 10 },
-  },
+  };
+}
+
+module.exports = {
+  development: databaseConfig(),
+  production: databaseConfig(),
 };
