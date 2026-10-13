@@ -1,0 +1,35 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Build
+dist/
+build/
+.vite/
+
+# Uploads
+backend/uploads/covers/*
+!backend/uploads/covers/.gitkeep
+backend/storage/backups/*
+!backend/storage/backups/.gitkeep
+
+# Logs
+*.log
+
+# Database (kecuali folder database/)
+*.sql
+!database/*.sql
+!database/**/*.sql
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
