@@ -1,46 +1,66 @@
 # PerpusKu - Sistem Perpustakaan Digital
 
-PerpusKu adalah aplikasi perpustakaan digital berbasis web. Checkout repository saat ini menyediakan frontend React dan API Express untuk persetujuan peminjaman serta riwayat pengembalian. Fitur lain yang disebut sebagai cakupan produk belum seluruhnya tersedia.
+PerpusKu adalah aplikasi perpustakaan digital berbasis web untuk mengelola katalog buku dan alur peminjaman. Rancangan produk mencakup beberapa peran pengguna, approval workflow, scan QR, denda, serta kartu anggota digital.
+
+> **Status checkout:** kode yang tersedia saat ini berfokus pada API persetujuan peminjaman dan riwayat pengembalian untuk pustakawan/admin. Fitur lain pada daftar di bawah merupakan cakupan produk dan belum seluruhnya tersedia pada snapshot repository ini. Migrasi dan seeder database juga belum disertakan.
+
+![Status](https://img.shields.io/badge/status-in%20development-yellow)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Daftar Isi
 
-- [Fitur yang tersedia](#fitur-yang-tersedia)
-- [Teknologi](#teknologi)
+- [Fitur](#fitur)
+- [Tech Stack](#tech-stack)
 - [Prasyarat](#prasyarat)
-- [Instalasi](#instalasi)
-- [Database](#database)
-- [Menjalankan aplikasi](#menjalankan-aplikasi)
-- [Build frontend](#build-frontend)
-- [Deploy ke server Ubuntu](#deploy-ke-server-ubuntu)
-- [Endpoint API](#endpoint-api)
-- [Batasan checkout](#batasan-checkout)
+- [Instalasi dan Konfigurasi](#instalasi-dan-konfigurasi)
+- [Menjalankan Aplikasi](#menjalankan-aplikasi)
+- [Akun Demo](#akun-demo)
+- [Struktur Folder](#struktur-folder)
+- [API](#api)
+- [Business Rules](#business-rules)
+- [Troubleshooting](#troubleshooting)
 - [Lisensi](#lisensi)
 
-## Fitur yang tersedia
+## Fitur
 
-- Daftar pengajuan peminjaman dengan pagination.
-- Persetujuan peminjaman secara transaksional, termasuk pengurangan stok buku.
-- Penolakan pengajuan dengan alasan.
-- Riwayat pengembalian dengan pencarian dan pagination.
-- Otorisasi endpoint untuk peran `pustakawan` dan `admin`.
-- Pencatatan aktivitas persetujuan dan penolakan.
+### Cakupan produk
 
-## Teknologi
+- Landing page, katalog buku, filter kategori, login, dan registrasi.
+- Dashboard dan pengelolaan buku, kategori, serta pengguna berdasarkan peran.
+- Scan QR Code untuk membantu proses peminjaman.
+- Workflow pengajuan peminjaman: pending, disetujui, atau ditolak.
+- Riwayat peminjaman dan pengembalian, serta pengelolaan denda.
+- Kartu anggota digital dengan QR Code.
+- Laporan, log aktivitas, dan backup database untuk administrator.
 
-| Bagian | Teknologi |
+### Tersedia pada checkout ini
+
+- API untuk melihat pengajuan pending, menyetujui atau menolak pengajuan, dan melihat riwayat pengembalian.
+- Otorisasi endpoint untuk peran pustakawan dan admin.
+- Persetujuan menggunakan transaksi database dan penguncian baris untuk menjaga stok buku.
+- Pencatatan aktivitas setelah persetujuan atau penolakan berhasil.
+- Halaman pustakawan untuk persetujuan dan riwayat pengembalian.
+
+## Tech Stack
+
+| Area | Teknologi |
 | --- | --- |
-| Frontend | React 18, Vite 5, Tailwind CSS 3 |
-| Backend | Node.js, Express 5, Knex.js |
-| Database | MySQL atau MariaDB, `mysql2` |
-| Autentikasi endpoint | JSON Web Token |
+| Frontend | React 18, Vite 5, Tailwind CSS 3, React Router 6, Axios |
+| Backend | Node.js 18+, Express, Knex.js |
+| Database | MySQL atau MariaDB, driver `mysql2` |
+| Autentikasi | JSON Web Token, bcryptjs |
+| UI | Lucide React, React Hot Toast |
+
+Versi dependency backend yang tercantum pada `server/package-lock.json` mencakup Express 5, Knex 3, dan MySQL2 3. Sebagian library yang tercantum dalam spesifikasi produk, seperti Chart.js dan `html5-qrcode`, belum tercantum pada dependency frontend checkout ini.
 
 ## Prasyarat
 
 - Node.js 18 atau lebih baru dan npm.
-- MySQL 8+ atau MariaDB yang sedang berjalan.
-- Git.
+- MySQL atau MariaDB yang berjalan secara lokal.
+- Git, jika repository di-clone.
 
-## Instalasi
+## Instalasi dan Konfigurasi
 
 1. Clone repository dan masuk ke folder proyek:
 
@@ -49,17 +69,30 @@ PerpusKu adalah aplikasi perpustakaan digital berbasis web. Checkout repository 
    cd perpusku-app
    ```
 
-2. Instal dependency frontend dan backend menggunakan lockfile:
+2. Instal dependency frontend:
 
    ```bash
    cd client
-   npm ci
-   cd ../server
-   npm ci
-   cd ..
+   npm install
    ```
 
-3. Salin `server/.env.example` menjadi `server/.env`, lalu isi konfigurasi database dan secret JWT. Jangan commit `server/.env` atau memasukkan credential produksi ke repository.
+3. Instal dependency backend yang digunakan oleh kode dan tercantum pada lockfile:
+
+   ```bash
+   cd ../server
+   npm install express cors dotenv knex mysql2 jsonwebtoken bcryptjs express-validator helmet multer morgan qrcode
+   npm install --save-dev nodemon
+   ```
+
+   `server/package.json` pada checkout ini belum mendeklarasikan dependency runtime yang terdapat di lockfile. Perintah di atas menambahkannya ke manifest agar aplikasi dapat dijalankan.
+
+4. Buat database MySQL, misalnya `library`:
+
+   ```sql
+   CREATE DATABASE library CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+
+5. Buat file `server/.env` dengan konfigurasi berikut, lalu sesuaikan nilainya:
 
    ```dotenv
    PORT=3000
@@ -67,121 +100,103 @@ PerpusKu adalah aplikasi perpustakaan digital berbasis web. Checkout repository 
    DB_HOST=127.0.0.1
    DB_PORT=3306
    DB_USER=root
-   DB_PASSWORD=ganti-password-database
+   DB_PASSWORD=
    DB_NAME=library
-   JWT_SECRET=ganti-dengan-secret-random-yang-panjang
+   JWT_SECRET=ganti-dengan-secret-yang-kuat
    ```
 
-   Buat secret acak yang kuat untuk `JWT_SECRET`; jangan gunakan nilai contoh di atas pada server.
+6. (Opsional) Atur URL API untuk frontend pada `client/.env`:
 
-## Database
+   ```dotenv
+   VITE_API_URL=http://localhost:3000/api
+   ```
 
-File skema database yang diperlukan API tersedia di [`server/database/schema.sql`](./server/database/schema.sql). Skema membuat tabel `users`, `books`, `loans`, dan `activity_logs`. File ini membuat tabel, tetapi tidak mengisi data pengguna atau buku.
+> **Database:** migrasi dan seeder belum tersedia pada checkout ini. Sebelum memakai endpoint, siapkan skema database yang sesuai, termasuk tabel `users`, `books`, `loans`, dan tabel yang digunakan oleh pencatatan aktivitas. Script migrasi di `server/package.json` baru dapat dijalankan setelah file migrasi/seeder ditambahkan.
 
-Buat database dan impor skema dari root repository:
+## Menjalankan Aplikasi
 
-```bash
-mysql -u root -p -e "CREATE DATABASE library CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root -p library < server/database/schema.sql
-```
-
-Jika nama database berbeda, ubah `DB_NAME` pada `server/.env` dan gunakan nama yang sama pada perintah impor. Pastikan akun database memiliki izin untuk membuat tabel dan mengakses database tersebut.
-
-## Menjalankan aplikasi
-
-Buka dua terminal dari root repository.
-
-Terminal pertama, jalankan API:
+Jalankan backend dari folder `server`:
 
 ```bash
-cd server
 npm run dev
 ```
 
-Terminal kedua, jalankan frontend:
+Jalankan frontend dari folder `client` pada terminal lain:
 
 ```bash
-cd client
 npm run dev
 ```
 
-Frontend berjalan pada `http://localhost:5173`; API berjalan pada `http://localhost:3000/api`. Secara default frontend memakai URL API tersebut. Untuk menggantinya, buat `client/.env` dengan:
+Frontend tersedia di `http://localhost:5173` dan API di `http://localhost:3000/api`.
 
-```dotenv
-VITE_API_URL=http://localhost:3000/api
-```
-
-## Build frontend
-
-Build file statis untuk produksi dari root repository:
+Build frontend untuk produksi:
 
 ```bash
 cd client
-npm ci
 npm run build
 ```
 
-Hasil build ada di `client/dist`. Sajikan folder ini dengan web server seperti Nginx. Variabel `VITE_API_URL` dibaca saat build, jadi atur nilainya sebelum menjalankan `npm run build`.
+## Akun Demo
 
-## Deploy ke server Ubuntu
+Belum ada akun demo atau seeder pengguna pada checkout ini. Buat akun melalui mekanisme aplikasi yang tersedia setelah skema database dan fitur autentikasi disiapkan.
 
-Contoh berikut menggunakan Ubuntu, Nginx, Node.js, dan MySQL/MariaDB. Sesuaikan domain, nama pengguna sistem, serta versi paket dengan kebijakan server Anda.
+## Struktur Folder
 
-1. Pasang Node.js 18+, npm, MySQL/MariaDB, Nginx, dan Git. Buat database dan akun database khusus aplikasi dengan hak minimum yang diperlukan.
-2. Clone repository ke direktori aplikasi, misalnya `/var/www/perpusku-app`, lalu jalankan `npm ci` dari masing-masing folder `server` dan `client`.
-3. Buat database sesuai [panduan database](#database), lalu impor `server/database/schema.sql`.
-4. Buat `server/.env` pada server. Isi `DB_*` dengan credential database server, `JWT_SECRET` dengan secret acak, `CLIENT_URL` dengan origin HTTPS situs frontend (contoh `https://perpus.example.com`), dan `PORT=3000`. Lindungi file ini dari akses pengguna lain.
-5. Build frontend dengan URL API yang akan dipakai pengunjung. Jika Nginx melayani API pada domain dan port yang sama, gunakan:
+```text
+client/
+  src/
+    api/                 Konfigurasi Axios dan pemanggilan API
+    components/          Komponen UI bersama
+    pages/pustakawan/    Halaman persetujuan dan pengembalian
+    utils/               Fungsi bantuan frontend
+server/
+  src/
+    config/              Koneksi database
+    controllers/         Logika endpoint
+    middleware/          Autentikasi, role, dan error handler
+    routes/              Registrasi route API
+    utils/               Utilitas, termasuk activity log
+  knexfile.js            Konfigurasi Knex dan koneksi MySQL
+```
 
-   ```dotenv
-   VITE_API_URL=/api
-   ```
+## API
 
-   Atur nilai tersebut di `client/.env.production` sebelum build, lalu jalankan `npm run build` dalam folder `client`.
-6. Jalankan backend sebagai service terkelola (misalnya `systemd` atau PM2), bukan sebagai proses terminal sementara. Contoh unit `systemd` berikut mengasumsikan aplikasi berada di `/var/www/perpusku-app` dan service berjalan sebagai pengguna Linux `www-data`:
-
-   ```ini
-   [Unit]
-   Description=PerpusKu API
-   After=network.target
-
-   [Service]
-   Type=simple
-   User=www-data
-   WorkingDirectory=/var/www/perpusku-app/server
-   Environment=NODE_ENV=production
-   ExecStart=/usr/bin/node /var/www/perpusku-app/server/src/app.js
-   Restart=on-failure
-   RestartSec=5
-
-   [Install]
-   WantedBy=multi-user.target
-   ```
-
-   Simpan sebagai `/etc/systemd/system/perpusku.service`, lalu aktifkan dengan `sudo systemctl daemon-reload`, `sudo systemctl enable --now perpusku`, dan periksa status/log dengan `sudo systemctl status perpusku` serta `sudo journalctl -u perpusku -f`. Untuk server produksi, batasi izin baca `server/.env` hanya kepada akun service dan pertimbangkan menjalankan service dengan akun khusus.
-7. Atur Nginx untuk menyajikan file dari `/var/www/perpusku-app/client/dist`, meneruskan path `/api/` ke `http://127.0.0.1:3000/api/`, dan mengarahkan fallback aplikasi satu halaman ke `index.html`. Aktifkan konfigurasi situs dan uji dengan `sudo nginx -t` sebelum reload.
-8. Aktifkan HTTPS pada domain, misalnya dengan Certbot/Let's Encrypt. Pastikan `CLIENT_URL` cocok dengan origin situs HTTPS, lalu build ulang frontend jika URL API berubah.
-
-Jangan mengekspos port database ke internet publik. Skema yang disediakan hanya menyiapkan tabel; aplikasi pada checkout ini belum menyediakan halaman administrasi untuk membuat pengguna atau mengisi data awal.
-
-## Endpoint API
-
-Semua endpoint memerlukan header `Authorization: Bearer <token>` yang valid dan peran pengguna `pustakawan` atau `admin`.
+Semua endpoint menggunakan prefix `/api` dan memerlukan bearer token yang valid. Endpoint berikut dibatasi untuk peran `pustakawan` atau `admin`.
 
 | Method | Endpoint | Keterangan |
 | --- | --- | --- |
-| `GET` | `/api/loans/pending` | Daftar pengajuan pending; mendukung query `page` dan `limit`. |
-| `POST` | `/api/loans/:id/approve` | Menyetujui pengajuan dan mengurangi stok buku. |
-| `POST` | `/api/loans/:id/reject` | Menolak pengajuan; body JSON wajib berisi `reason`. |
-| `GET` | `/api/loans/returns` | Riwayat pengembalian; mendukung `page`, `limit`, dan `search`. |
+| `GET` | `/api/loans/pending` | Daftar pengajuan pending. Mendukung query `page` dan `limit`. |
+| `POST` | `/api/loans/:id/approve` | Menyetujui pengajuan dan mengurangi stok buku secara transaksional. |
+| `POST` | `/api/loans/:id/reject` | Menolak pengajuan. Body JSON wajib berisi `reason`. |
+| `GET` | `/api/loans/returns` | Riwayat pengembalian. Mendukung `page`, `limit`, dan `search`. |
 
-## Batasan checkout
+Contoh body penolakan:
 
-- Belum tersedia endpoint atau halaman login/registrasi untuk membuat akun dan token. Endpoint di atas baru dapat digunakan setelah pengguna serta token yang valid disediakan melalui mekanisme autentikasi yang terintegrasi.
-- Tidak ada data demo atau seeder; skema database hanya membuat tabel kosong.
-- Migrasi otomatis Knex dan pemulihan/backup database belum disediakan.
-- Perhitungan denda dan fitur produk lain yang belum disebut pada bagian [Fitur yang tersedia](#fitur-yang-tersedia) belum tersedia pada checkout ini.
+```json
+{
+  "reason": "Stok buku tidak tersedia"
+}
+```
+
+Format respons endpoint berupa JSON dengan properti `success`, `message`, dan `data`. Endpoint daftar juga mengembalikan informasi `pagination`.
+
+## Business Rules
+
+- Hanya pengajuan berstatus `pending` yang dapat disetujui atau ditolak.
+- Persetujuan gagal jika buku tidak ditemukan atau stok tersedia kurang dari satu.
+- Pengurangan stok dan perubahan status peminjaman dilakukan dalam transaksi database.
+- Alasan penolakan wajib diisi.
+- Riwayat pengembalian saat ini menampilkan pinjaman dengan status `dikembalikan` atau `terlambat`.
+- Spesifikasi produk menetapkan denda Rp 2.000 per hari per buku; perhitungan dan penerapan denda belum tersedia pada kode checkout ini.
+
+## Troubleshooting
+
+- **API gagal terhubung ke database:** pastikan MySQL aktif, database sudah dibuat, dan nilai `DB_*` pada `server/.env` benar.
+- **Frontend tidak dapat mengakses API:** pastikan backend berjalan dan `VITE_API_URL` menunjuk ke alamat API yang benar. Nilai default adalah `http://localhost:3000/api`.
+- **Permintaan mendapat `401`:** sertakan token pada header `Authorization: Bearer <token>` dan pastikan `JWT_SECRET` sesuai dengan secret pembuat token.
+- **Endpoint mengembalikan error tabel tidak ditemukan:** skema database belum tersedia secara otomatis; siapkan tabel yang dibutuhkan sebelum menjalankan endpoint.
+- **`npm run dev` backend gagal karena module tidak ditemukan:** jalankan instalasi dependency backend pada bagian [Instalasi dan Konfigurasi](#instalasi-dan-konfigurasi).
 
 ## Lisensi
 
-Backend mendeklarasikan lisensi MIT. Sertakan file lisensi proyek yang sesuai sebelum mendistribusikan aplikasi.
+Metadata package backend menyatakan lisensi MIT. Pastikan file lisensi proyek disertakan sebelum mendistribusikan aplikasi.

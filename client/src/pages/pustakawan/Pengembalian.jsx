@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Search, RotateCcw, CheckCircle, Banknote } from 'lucide-react';
 import { loanApi } from '../../api/endpoints';
-import { formatTanggal as formatTanggalShort, formatRupiah, getInitials } from '../../utils/helpers';
+import { formatTanggalShort, formatRupiah, getInitials } from '../../utils/helpers';
 import Loading from '../../components/Loading';
 import toast from 'react-hot-toast';
 
