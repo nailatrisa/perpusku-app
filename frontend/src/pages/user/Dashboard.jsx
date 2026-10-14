@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Users, Tags, Star, TrendingUp, ChevronRight, Sparkles, Clock, Search, Shield, Leaf, Zap } from 'lucide-react';
 import { dashboardApi, bookApi, categoryApi } from '../../api/endpoints';
-import { getUploadUrl, formatTanggalShort, hitungHariTerlambat } from '../../utils/helpers';
+import { getUploadUrl, formatTanggalShort, hitungHariTerlambat, handleBookCoverError } from '../../utils/helpers';
 import Loading from '../../components/Loading';
 import toast from 'react-hot-toast';
 
@@ -140,7 +140,7 @@ export default function UserDashboard() {
                 <Link key={b.id} to={`/user/catalog/${b.id}`} className="group">
                   <div className="aspect-[3/4] rounded-xl overflow-hidden bg-dark-800 relative shadow-lg group-hover:shadow-violet transition-all group-hover:-translate-y-1 duration-300">
                     {b.cover ? (
-                      <img src={getUploadUrl(b.cover)} alt={b.judul} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                      <img src={getUploadUrl(b.cover)} onError={handleBookCoverError} alt={b.judul} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-dark-500"><BookOpen size={32} /></div>
                     )}
@@ -169,7 +169,7 @@ export default function UserDashboard() {
                   return (
                     <div key={l.id} className="flex items-center gap-3 p-3 bg-dark-800/50 rounded-xl border border-dark-800">
                       <div className="w-12 h-16 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                        {l.cover ? <img src={getUploadUrl(l.cover)} alt="" className="w-full h-full object-cover" /> : <BookOpen size={18} className="text-white" />}
+                        {l.cover ? <img src={getUploadUrl(l.cover)} onError={handleBookCoverError} alt="" className="w-full h-full object-cover" /> : <BookOpen size={18} className="text-white" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-white text-sm truncate">{l.judul}</p>
@@ -204,7 +204,7 @@ export default function UserDashboard() {
                 <div key={b.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-dark-800/50 transition group">
                   <div className="w-12 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-dark-800 shadow-lg">
                     {b.cover ? (
-                      <img src={getUploadUrl(b.cover)} alt="" className="w-full h-full object-cover" />
+                      <img src={getUploadUrl(b.cover)} onError={handleBookCoverError} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-dark-500 text-xs"><BookOpen size={16} /></div>
                     )}

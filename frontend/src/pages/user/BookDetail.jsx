@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, BookOpen, HandHelping, Check } from 'lucide-react';
 import { bookApi, loanApi } from '../../api/endpoints';
-import { getUploadUrl } from '../../utils/helpers';
+import { getUploadUrl, handleBookCoverError } from '../../utils/helpers';
 import Loading from '../../components/Loading';
 import toast from 'react-hot-toast';
 
@@ -65,7 +65,7 @@ export default function BookDetail() {
         <div className="grid md:grid-cols-3 gap-6 p-6">
           <div className="md:col-span-1">
             {book.cover ? (
-              <img src={getUploadUrl(book.cover)} alt={book.judul} className="w-full rounded-lg shadow-md" />
+              <img src={getUploadUrl(book.cover)} onError={handleBookCoverError} alt={book.judul} className="w-full rounded-lg shadow-md" />
             ) : (
               <div className="aspect-[3/4] bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg flex items-center justify-center text-white">
                 <BookOpen size={64} />

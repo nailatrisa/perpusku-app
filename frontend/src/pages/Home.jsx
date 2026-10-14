@@ -7,7 +7,7 @@ import {
 import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 import { bookApi, categoryApi } from '../api/endpoints';
-import { getUploadUrl } from '../utils/helpers';
+import { getUploadUrl, handleBookCoverError } from '../utils/helpers';
 
 export default function Home() {
   const [books, setBooks] = useState([]);
@@ -129,7 +129,7 @@ export default function Home() {
                   <div key={i} className="flex items-center gap-3 p-3 bg-dark-800/50 rounded-xl">
                     <div className="w-10 h-14 rounded-lg overflow-hidden bg-dark-800 flex-shrink-0">
                       {b.cover ? (
-                        <img src={getUploadUrl(b.cover)} alt="" className="w-full h-full object-cover" />
+                        <img src={getUploadUrl(b.cover)} onError={handleBookCoverError} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-primary-400"><BookOpen size={16} /></div>
                       )}
@@ -259,7 +259,7 @@ export default function Home() {
                 <Link key={b.id} to="/login" className="group">
                   <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-dark-900 relative shadow-lg group-hover:shadow-violet transition-all group-hover:-translate-y-2 duration-300">
                     {b.cover ? (
-                      <img src={getUploadUrl(b.cover)} alt={b.judul} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                      <img src={getUploadUrl(b.cover)} onError={handleBookCoverError} alt={b.judul} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-dark-500"><BookOpen size={40} /></div>
                     )}

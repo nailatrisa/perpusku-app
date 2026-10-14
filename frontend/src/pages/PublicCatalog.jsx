@@ -4,7 +4,7 @@ import { Search, BookOpen, Filter, ArrowLeft, X, SlidersHorizontal, Grid3x3, Lis
 import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 import { bookApi, categoryApi } from '../api/endpoints';
-import { getUploadUrl } from '../utils/helpers';
+import { getUploadUrl, handleBookCoverError } from '../utils/helpers';
 
 export default function PublicCatalog() {
   const [params, setParams] = useSearchParams();
@@ -223,7 +223,7 @@ export default function PublicCatalog() {
                 >
                   <div className="aspect-[3/4] bg-gradient-to-br from-slate-900 to-slate-700 overflow-hidden relative">
                     {b.cover ? (
-                      <img src={getUploadUrl(b.cover)} alt={b.judul} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                      <img src={getUploadUrl(b.cover)} onError={handleBookCoverError} alt={b.judul} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-white">
                         <BookOpen size={48} />

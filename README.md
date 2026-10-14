@@ -2,7 +2,7 @@
 
 PerpusKu adalah aplikasi perpustakaan digital berbasis web untuk mengelola katalog buku dan alur peminjaman. Rancangan produk mencakup beberapa peran pengguna, approval workflow, scan QR, denda, serta kartu anggota digital.
 
-> **Status checkout:** kode yang tersedia saat ini berfokus pada API persetujuan peminjaman dan riwayat pengembalian untuk pustakawan/admin. Fitur lain pada daftar di bawah merupakan cakupan produk dan belum seluruhnya tersedia pada snapshot repository ini. Migrasi dan seeder database juga belum disertakan.
+> **Status checkout:** katalog buku dan kategori, autentikasi, serta API persetujuan peminjaman dan riwayat pengembalian tersedia. Halaman dashboard dan pengelolaan lain masih memerlukan endpoint backend tambahan. File migrasi, seeder, dan dump database tidak disertakan; siapkan database MySQL sesuai skema sebelum menjalankan aplikasi.
 
 ![Status](https://img.shields.io/badge/status-in%20development-yellow)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
@@ -36,11 +36,14 @@ PerpusKu adalah aplikasi perpustakaan digital berbasis web untuk mengelola katal
 
 ### Tersedia pada checkout ini
 
+- Katalog publik buku dan kategori yang membaca data dari MySQL.
+- Login, registrasi anggota, pemuatan profil, dan autentikasi JWT.
+- Pemeriksaan status API dan koneksi database melalui `GET /api/health`.
 - API untuk melihat pengajuan pending, menyetujui atau menolak pengajuan, dan melihat riwayat pengembalian.
 - Otorisasi endpoint untuk peran pustakawan dan admin.
 - Persetujuan menggunakan transaksi database dan penguncian baris untuk menjaga stok buku.
 - Pencatatan aktivitas setelah persetujuan atau penolakan berhasil.
-- Halaman pustakawan untuk persetujuan dan riwayat pengembalian.
+- Halaman katalog publik dan halaman pustakawan untuk persetujuan dan riwayat pengembalian.
 
 ## Tech Stack
 
@@ -52,7 +55,7 @@ PerpusKu adalah aplikasi perpustakaan digital berbasis web untuk mengelola katal
 | Autentikasi | JSON Web Token, bcryptjs |
 | UI | Lucide React, React Hot Toast |
 
-Versi dependency backend yang tercantum pada `server/package-lock.json` mencakup Express 5, Knex 3, dan MySQL2 3. Sebagian library yang tercantum dalam spesifikasi produk, seperti Chart.js dan `html5-qrcode`, belum tercantum pada dependency frontend checkout ini.
+Dependency yang dipakai aplikasi dideklarasikan pada `backend/package.json` dan `frontend/package.json`, termasuk Chart.js dan `html5-qrcode`.
 
 ## Prasyarat
 
@@ -62,66 +65,54 @@ Versi dependency backend yang tercantum pada `server/package-lock.json` mencakup
 
 ## Instalasi dan Konfigurasi
 
-1. Clone repository dan masuk ke folder proyek:
+1. Pastikan MySQL/MariaDB aktif dan database `library` beserta tabel aplikasi sudah dibuat atau dipulihkan dari dump database Anda. Repository ini tidak menyertakan dump, migrasi, atau seeder.
+
+2. Instal dependency backend:
 
    ```bash
-   git clone <URL_REPOSITORY>
-   cd perpusku-app
-   ```
-
-2. Instal dependency frontend:
-
-   ```bash
-   cd client
+   cd backend
    npm install
    ```
 
-3. Instal dependency backend yang digunakan oleh kode dan tercantum pada lockfile:
-
-   ```bash
-   cd ../server
-   npm install express cors dotenv knex mysql2 jsonwebtoken bcryptjs express-validator helmet multer morgan qrcode
-   npm install --save-dev nodemon
-   ```
-
-   `server/package.json` pada checkout ini belum mendeklarasikan dependency runtime yang terdapat di lockfile. Perintah di atas menambahkannya ke manifest agar aplikasi dapat dijalankan.
-
-4. Buat database MySQL, misalnya `library`:
-
-   ```sql
-   CREATE DATABASE library CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
-
-5. Buat file `server/.env` dengan konfigurasi berikut, lalu sesuaikan nilainya:
+3. Buat atau periksa `backend/.env`:
 
    ```dotenv
    PORT=3000
-   CLIENT_URL=http://localhost:5173
+   NODE_ENV=development
    DB_HOST=127.0.0.1
    DB_PORT=3306
    DB_USER=root
    DB_PASSWORD=
    DB_NAME=library
-   JWT_SECRET=ganti-dengan-secret-yang-kuat
+   JWT_SECRET=ganti-dengan-secret-acak-yang-kuat
+   JWT_EXPIRES_IN=7d
+   CLIENT_URL=http://localhost:5173
    ```
 
-6. (Opsional) Atur URL API untuk frontend pada `client/.env`:
+4. Instal dependency frontend:
+
+   ```bash
+   cd ../frontend
+   npm install
+   ```
+
+5. (Opsional) Buat `frontend/.env` jika URL API berbeda:
 
    ```dotenv
    VITE_API_URL=http://localhost:3000/api
    ```
 
-> **Database:** migrasi dan seeder belum tersedia pada checkout ini. Sebelum memakai endpoint, siapkan skema database yang sesuai, termasuk tabel `users`, `books`, `loans`, dan tabel yang digunakan oleh pencatatan aktivitas. Script migrasi di `server/package.json` baru dapat dijalankan setelah file migrasi/seeder ditambahkan.
+   Skema yang digunakan mencakup tabel `users`, `books`, `categories`, `loans`, `fines`, dan `activity_logs`.
 
 ## Menjalankan Aplikasi
 
-Jalankan backend dari folder `server`:
+Jalankan backend dari folder `backend`:
 
 ```bash
 npm run dev
 ```
 
-Jalankan frontend dari folder `client` pada terminal lain:
+Jalankan frontend dari folder `frontend` pada terminal lain:
 
 ```bash
 npm run dev
@@ -129,10 +120,12 @@ npm run dev
 
 Frontend tersedia di `http://localhost:5173` dan API di `http://localhost:3000/api`.
 
+API aktif di `http://localhost:3000/api`; cek koneksi database di `http://localhost:3000/api/health`. Katalog publik tersedia di `http://localhost:5173`.
+
 Build frontend untuk produksi:
 
 ```bash
-cd client
+cd frontend
 npm run build
 ```
 
@@ -143,13 +136,13 @@ Belum ada akun demo atau seeder pengguna pada checkout ini. Buat akun melalui me
 ## Struktur Folder
 
 ```text
-client/
+frontend/
   src/
     api/                 Konfigurasi Axios dan pemanggilan API
     components/          Komponen UI bersama
     pages/pustakawan/    Halaman persetujuan dan pengembalian
     utils/               Fungsi bantuan frontend
-server/
+backend/
   src/
     config/              Koneksi database
     controllers/         Logika endpoint
@@ -161,10 +154,17 @@ server/
 
 ## API
 
-Semua endpoint menggunakan prefix `/api` dan memerlukan bearer token yang valid. Endpoint berikut dibatasi untuk peran `pustakawan` atau `admin`.
+Semua endpoint menggunakan prefix `/api`. Katalog, kategori, health check, login, dan registrasi bersifat publik. Endpoint profil dan peminjaman memerlukan bearer token; endpoint peminjaman petugas dibatasi untuk peran `pustakawan` atau `admin`.
 
 | Method | Endpoint | Keterangan |
 | --- | --- | --- |
+| `GET` | `/api/health` | Memeriksa API dan koneksi database. |
+| `GET` | `/api/books` | Katalog publik. Mendukung `page`, `limit`, `search`, `category_id`, dan `sort=popular`. |
+| `GET` | `/api/books/:id` | Detail buku. |
+| `GET` | `/api/categories` | Daftar kategori dan jumlah buku. |
+| `POST` | `/api/auth/login` | Login dengan `email` dan `password`. |
+| `POST` | `/api/auth/register` | Registrasi akun anggota. |
+| `GET` | `/api/auth/me` | Profil pengguna dari bearer token. |
 | `GET` | `/api/loans/pending` | Daftar pengajuan pending. Mendukung query `page` dan `limit`. |
 | `POST` | `/api/loans/:id/approve` | Menyetujui pengajuan dan mengurangi stok buku secara transaksional. |
 | `POST` | `/api/loans/:id/reject` | Menolak pengajuan. Body JSON wajib berisi `reason`. |
@@ -191,11 +191,12 @@ Format respons endpoint berupa JSON dengan properti `success`, `message`, dan `d
 
 ## Troubleshooting
 
-- **API gagal terhubung ke database:** pastikan MySQL aktif, database sudah dibuat, dan nilai `DB_*` pada `server/.env` benar.
+- **API gagal terhubung ke database:** buka `/api/health`, pastikan MySQL aktif, database dan tabel sudah tersedia, serta nilai `DB_*` pada `backend/.env` benar.
 - **Frontend tidak dapat mengakses API:** pastikan backend berjalan dan `VITE_API_URL` menunjuk ke alamat API yang benar. Nilai default adalah `http://localhost:3000/api`.
 - **Permintaan mendapat `401`:** sertakan token pada header `Authorization: Bearer <token>` dan pastikan `JWT_SECRET` sesuai dengan secret pembuat token.
 - **Endpoint mengembalikan error tabel tidak ditemukan:** skema database belum tersedia secara otomatis; siapkan tabel yang dibutuhkan sebelum menjalankan endpoint.
-- **`npm run dev` backend gagal karena module tidak ditemukan:** jalankan instalasi dependency backend pada bagian [Instalasi dan Konfigurasi](#instalasi-dan-konfigurasi).
+- **Cover buku tidak muncul:** pulihkan file cover ke `backend/uploads/covers` sesuai path pada database. Jika file belum ada, katalog menggunakan cover placeholder.
+- **`npm run dev` gagal karena module tidak ditemukan:** jalankan `npm install` dari folder `backend` atau `frontend` yang sesuai.
 
 ## Lisensi
 

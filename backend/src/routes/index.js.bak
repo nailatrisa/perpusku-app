@@ -1,0 +1,40 @@
+const express = require('express');
+const authController = require('../controllers/authController');
+const catalogController = require('../controllers/catalogController');
+const db = require('../config/database');
+const loanController = require('../controllers/loanController');
+const { authenticate } = require('../middleware/auth');
+const { authorize } = require('../middleware/role');
+
+const router = express.Router();
+const librarianOrAdmin = [authenticate, authorize('pustakawan', 'admin')];
+
+router.get('/health', async (req, res, next) => {
+  try {
+    await db.raw('SELECT 1');
+    return res.json({ success: true, message: 'API dan database berjalan.', data: { database: 'connected' } });
+  } catch (error) {
+    console.error('Pemeriksaan koneksi database gagal:', error);
+    return res.status(503).json({
+      success: false,
+      message: 'Database tidak dapat dihubungi.',
+      data: { database: 'disconnected' },
+    });
+  }
+});
+
+router.post('/auth/login', authController.login);
+router.post('/auth/register', authController.register);
+router.get('/auth/me', authenticate, authController.me);
+router.post('/auth/logout', authenticate, authController.logout);
+
+router.get('/books', catalogController.listBooks);
+router.get('/books/:id', catalogController.showBook);
+router.get('/categories', catalogController.listCategories);
+
+router.get('/loans/pending', ...librarianOrAdmin, loanController.pendingList);
+router.post('/loans/:id/approve', ...librarianOrAdmin, loanController.approve);
+router.post('/loans/:id/reject', ...librarianOrAdmin, loanController.reject);
+router.get('/loans/returns', ...librarianOrAdmin, loanController.returns);
+
+module.exports = router;

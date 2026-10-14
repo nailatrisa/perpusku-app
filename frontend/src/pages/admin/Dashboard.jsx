@@ -4,7 +4,7 @@ import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { BookOpen, Users, HandHelping, Banknote, TrendingUp, AlertTriangle, Flame, ChevronRight, Activity } from 'lucide-react';
 import { dashboardApi } from '../../api/endpoints';
-import { formatRupiah, formatDateTime, getUploadUrl, getInitials } from '../../utils/helpers';
+import { formatRupiah, formatDateTime, getUploadUrl, getInitials, handleBookCoverError } from '../../utils/helpers';
 import Loading from '../../components/Loading';
 import toast from 'react-hot-toast';
 
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
             ) : stok_menipis.map((b) => (
               <div key={b.id} className="flex items-center gap-3">
                 <div className="w-10 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white flex-shrink-0 overflow-hidden">
-                  {b.cover ? <img src={getUploadUrl(b.cover)} alt="" className="w-full h-full object-cover" /> : <BookOpen size={16} />}
+                  {b.cover ? <img src={getUploadUrl(b.cover)} onError={handleBookCoverError} alt="" className="w-full h-full object-cover" /> : <BookOpen size={16} />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-white truncate">{b.judul}</p>

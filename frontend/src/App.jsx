@@ -67,7 +67,10 @@ export default function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="users/create" element={<AdminUserForm mode="create" />} />
             <Route path="users/:id" element={<AdminUserForm mode="view" />} />
-            <Route path="users/:id/edit" element={<AdminUserForm mode="edit" />} />`n            <Route path="reports" element={<AdminReports />} />`n            <Route path="activity-logs" element={<AdminActivityLogs />} />`n            <Route path="backups" element={<AdminBackups />} />
+            <Route path="users/:id/edit" element={<AdminUserForm mode="edit" />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="activity-logs" element={<AdminActivityLogs />} />
+            <Route path="backups" element={<AdminBackups />} />
           </Route>
 
           <Route path="/pustakawan" element={

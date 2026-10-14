@@ -1,128 +1,67 @@
 # Panduan Instalasi PerpusKu
 
-Panduan lengkap instalasi PerpusKu dari nol sampai siap dijalankan.
-
 ## Prasyarat
 
-- Node.js v18+ (https://nodejs.org)
-- npm v9+ (bawaan Node.js)
-- XAMPP v8+ (https://www.apachefriends.org)
-- Git (https://git-scm.com)
+- Node.js 18 atau lebih baru dan npm.
+- MySQL/MariaDB lokal, misalnya melalui XAMPP.
 
-Cek instalasi:
+## 1. Siapkan database
 
-## Langkah 1 - Clone Repository
+Jalankan MySQL dari XAMPP. Aplikasi menggunakan database `library`; pastikan database tersebut sudah memiliki tabel `users`, `books`, `categories`, `loans`, `fines`, dan `activity_logs`.
 
-## Langkah 2 - Setup Database MySQL
+Repository ini belum menyertakan dump SQL, migrasi, atau seeder. Jika database belum memiliki tabel/data, pulihkan skema dan data dari backup database Anda melalui phpMyAdmin atau MySQL.
 
-### 2.1 Start MySQL
-1. Buka XAMPP Control Panel
-2. Klik Start pada baris MySQL
-3. Tunggu status Running (hijau)
+## 2. Konfigurasi dan jalankan backend
 
-### 2.2 Buat Database
-1. Buka http://localhost/phpmyadmin
-2. Klik "Baru" / "New" di sidebar kiri
-3. Nama database: library
-4. Collation: utf8mb4_general_ci
-5. Klik Buat / Create
+Buat atau sesuaikan `backend/.env`:
 
-### 2.3 Import Database
-
-Cara A - Via phpMyAdmin:
-1. Klik database library
-2. Klik tab Import
-3. Choose File - pilih database/perpusku_backup.sql
-4. Klik Go / Import
-
-Cara B - Via Command Line:
-
-## Langkah 2 - Setup Database MySQL
-
-### 2.1 Start MySQL
-1. Buka XAMPP Control Panel
-2. Klik Start pada baris MySQL
-3. Tunggu status Running (hijau)
-
-### 2.2 Buat Database
-1. Buka http://localhost/phpmyadmin
-2. Klik "Baru" / "New" di sidebar kiri
-3. Nama database: library
-4. Collation: utf8mb4_general_ci
-5. Klik Buat / Create
-
-### 2.3 Import Database
-
-Cara A - Via phpMyAdmin:
-1. Klik database library
-2. Klik tab Import
-3. Choose File - pilih database/perpusku_backup.sql
-4. Klik Go / Import
-
-Cara B - Via Command Line:
-
-## Langkah 3 - Setup Backend
-
-### 3.1 Masuk Folder Backend
-
-### 3.2 Install Dependencies
-APP_NAME=PerpusKu
-APP_PORT=3000
-FRONTEND_URL=http://localhost:5173
+```dotenv
+PORT=3000
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=library
-JWT_SECRET=perpusku-super-secret-key-change-in-production
+JWT_SECRET=ganti-dengan-secret-acak-yang-kuat
 JWT_EXPIRES_IN=7d
-UPLOAD_PATH=uploads
+```
 
-### 3.4 Buat Folder Uploads
+Di PowerShell:
 
-### 3.5 Verifikasi Backend
+```powershell
+Set-Location C:\perpusku-app\backend
+npm install
+npm run dev
+```
 
-Kalau muncul "PerpusKu API Server Running on http://localhost:3000" berarti berhasil.
+Periksa `http://localhost:3000/api/health`. Respons `database: "connected"` menandakan API berhasil tersambung ke MySQL.
 
-## Langkah 4 - Setup Frontend
+## 3. Jalankan frontend
 
-### 4.1 Masuk Folder Frontend (terminal baru)
+Buka terminal PowerShell baru:
 
-### 4.2 Install Dependencies
+```powershell
+Set-Location C:\perpusku-app\frontend
+npm install
+npm run dev
+```
 
-### 4.3 Buat File .env
-Buat file frontend/.env:
+Buka alamat lokal yang ditampilkan Vite (biasanya `http://localhost:5173`). Jika Vite memakai port lain karena port 5173 sedang digunakan, samakan `CLIENT_URL` di `backend/.env` dengan alamat frontend lalu jalankan ulang backend.
 
-### 4.4 Verifikasi Frontend
+Katalog publik membaca data langsung dari database. Endpoint `GET http://localhost:3000/api/books` dan `GET http://localhost:3000/api/categories` dapat digunakan untuk memeriksa data katalog.
 
-Kalau muncul VITE ready di http://localhost:5173 berarti berhasil.
+Jika file cover tidak ikut dipulihkan bersama database, katalog menampilkan cover placeholder. Simpan file cover pada `backend/uploads/covers` dengan nama file yang dirujuk kolom `books.cover` untuk menampilkan gambar aslinya.
 
-## Checklist Instalasi
+## Akun demo
 
-- [ ] Node.js terinstall
-- [ ] XAMPP MySQL Running
-- [ ] Database library dibuat
-- [ ] File database/perpusku_backup.sql ter-import
-- [ ] Backend npm install sukses
-- [ ] File backend/.env dibuat
-- [ ] Backend bisa start
-- [ ] Frontend npm install sukses
-- [ ] File frontend/.env dibuat
-- [ ] Frontend bisa start
+Jika akun demo sudah tersedia pada database:
 
-## Troubleshooting
+| Peran | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@perpusku.com` | `password` |
+| Pustakawan | `pustakawan1@perpusku.com` | `password` |
+| Masyarakat | `user1@perpusku.com` | `password` |
 
-### Error npm command not found
-Node.js belum terinstall. Restart terminal setelah install.
-
-### Error ER_ACCESS_DENIED_ERROR
-Password MySQL salah. Cek DB_PASSWORD di .env.
-
-### Error ER_NO_SUCH_TABLE
-Database belum ter-import. Ulangi Langkah 2.3.
-
-### Error Port 3000 already in use
-
-### Error Cannot find module
-
-Kembali ke README.md
+Akun tersebut hanya untuk pengembangan. Ganti password sebelum aplikasi digunakan di lingkungan lain.

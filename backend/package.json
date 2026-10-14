@@ -13,7 +13,28 @@
     "seed": "knex seed:run",
     "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run"
   },
-  "keywords": ["perpusku", "express", "knex"],
+  "keywords": [
+    "perpusku",
+    "express",
+    "knex"
+  ],
   "author": "Anda",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.7",
+    "express": "^5.3.0",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "knex": "^3.3.0",
+    "morgan": "^1.12.1",
+    "multer": "^2.4.0",
+    "mysql2": "^3.24.5",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }

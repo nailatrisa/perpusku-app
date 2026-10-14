@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check, X, Clock, BookOpen } from 'lucide-react';
 import { loanApi } from '../../api/endpoints';
-import { formatTanggalJam, getUploadUrl, getInitials } from '../../utils/helpers';
+import { formatTanggalJam, getUploadUrl, getInitials, handleBookCoverError } from '../../utils/helpers';
 import Loading from '../../components/Loading';
 import toast from 'react-hot-toast';
 
@@ -81,7 +81,7 @@ export default function Persetujuan() {
                 <div className="w-full md:w-32 flex-shrink-0">
                   <div className="aspect-[3/4] rounded-lg overflow-hidden bg-dark-800">
                     {l.book_cover ? (
-                      <img src={getUploadUrl(l.book_cover)} alt={l.book_judul} className="w-full h-full object-cover" />
+                      <img src={getUploadUrl(l.book_cover)} onError={handleBookCoverError} alt={l.book_judul} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-dark-500"><BookOpen size={32} /></div>
                     )}

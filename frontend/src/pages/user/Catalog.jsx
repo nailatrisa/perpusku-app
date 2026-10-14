@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, BookOpen, Library } from 'lucide-react';
 import { bookApi, categoryApi } from '../../api/endpoints';
-import { getUploadUrl } from '../../utils/helpers';
+import { getUploadUrl, handleBookCoverError } from '../../utils/helpers';
 import Loading from '../../components/Loading';
 import toast from 'react-hot-toast';
 
@@ -68,7 +68,7 @@ export default function Catalog() {
                 <Link key={b.id} to={`/user/catalog/${b.id}`} className="bg-dark-900/60 rounded-xl shadow-sm border hover:shadow-lg transition overflow-hidden group">
                   <div className="aspect-[3/4] bg-gradient-to-br from-slate-900 to-slate-800 overflow-hidden">
                     {b.cover ? (
-                      <img src={getUploadUrl(b.cover)} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                      <img src={getUploadUrl(b.cover)} onError={handleBookCoverError} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-white"><BookOpen size={48} /></div>
                     )}

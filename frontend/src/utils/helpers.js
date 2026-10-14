@@ -45,7 +45,15 @@ export const hitungHariTerlambat = (jatuhTempo) => {
 export const getUploadUrl = (path) => {
   if (!path) return null;
   if (path.startsWith('http')) return path;
-  return `${import.meta.env.VITE_UPLOAD_URL}/${path.replace('covers/', 'covers/')}`;
+  const uploadUrl = import.meta.env.VITE_UPLOAD_URL || 'http://localhost:3000/uploads';
+  return `${uploadUrl.replace(/\/$/, '')}/${path.replace(/^\/+/, '')}`;
+};
+
+export const handleBookCoverError = (event) => {
+  const image = event.currentTarget;
+  if (image.dataset.fallbackApplied) return;
+  image.dataset.fallbackApplied = 'true';
+  image.src = '/book-placeholder.svg';
 };
 
 export const getInitials = (name) => {

@@ -19,6 +19,9 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
       },
+      boxShadow: {
+        violet: '0 10px 30px -10px rgba(108, 99, 255, 0.5)',
+      },
     },
   },
   plugins: [],

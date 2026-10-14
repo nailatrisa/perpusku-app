@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, Pencil, QrCode } from 'lucide-react';
 import { bookApi, categoryApi } from '../../api/endpoints';
-import { getUploadUrl } from '../../utils/helpers';
+import { getUploadUrl, handleBookCoverError } from '../../utils/helpers';
 import Loading from '../../components/Loading';
 import toast from 'react-hot-toast';
 
@@ -140,7 +140,7 @@ export default function BookForm({ mode = 'create' }) {
               <label className="label">Cover Buku</label>
               {preview && (
                 <div className="mb-3">
-                  <img src={preview} alt="preview" className="w-24 h-32 object-cover rounded shadow" />
+                  <img src={preview} onError={handleBookCoverError} alt="preview" className="w-24 h-32 object-cover rounded shadow" />
                 </div>
               )}
               <input type="file" accept="image/*" onChange={handleCover} className="input file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-slate-900 file:text-white hover:file:bg-slate-800 file:cursor-pointer" />

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Search, Filter, Eye, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { bookApi, categoryApi } from '../../api/endpoints';
-import { getUploadUrl } from '../../utils/helpers';
+import { getUploadUrl, handleBookCoverError } from '../../utils/helpers';
 import Loading from '../../components/Loading';
 import toast from 'react-hot-toast';
 
@@ -92,7 +92,7 @@ export default function Books() {
                   <tr key={b.id} className="hover:bg-dark-900/40 transition">
                     <td className="px-4 py-3">
                       {b.cover ? (
-                        <img src={getUploadUrl(b.cover)} alt="" className="w-12 h-16 object-cover rounded shadow-sm" />
+                        <img src={getUploadUrl(b.cover)} onError={handleBookCoverError} alt="" className="w-12 h-16 object-cover rounded shadow-sm" />
                       ) : (
                         <div className="w-12 h-16 bg-gradient-to-br from-slate-900 to-slate-800 rounded flex items-center justify-center text-white">
                           <BookOpen size={18} />
